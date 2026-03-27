@@ -1,10 +1,10 @@
 #  PETXadrez
 
-> **Status:** Versão Alpha (MVP 1.0) 
+> **Status:** Versão Alpha (MVP) 
 
 O **PETXadrez** é uma aplicação web desenvolvida para gerenciar o ranking de jogadores de xadrez da sala do PET (Programa de Educação Tutorial) do curso de Ciência da Computação. 
 
-O ambiente serve como um espaço de estudos e socialização, onde dezenas de partidas casuais ocorrem diariamente. O objetivo deste sistema é gamificar essa experiência, introduzindo um sistema de *Matchmaking Rating* (MMR) baseado no cálculo Elo (o mesmo utilizado pela FIDE), proporcionando maior competitividade e incentivando o engajamento dos alunos.
+O objetivo deste sistema é gamificar essa experiência, introduzindo um sistema de *Matchmaking Rating* (MMR) baseado no cálculo Elo (o mesmo utilizado pela FIDE), proporcionando maior competitividade e incentivando o engajamento dos alunos.
 
 ---
 
@@ -21,12 +21,13 @@ O ambiente serve como um espaço de estudos e socialização, onde dezenas de pa
 O projeto foi construído focando em performance, responsividade (Mobile-First) e facilidade de manutenção:
 
 * **Frontend:** React.js construído com Vite.
-* **Estilização:** Tailwind CSS (v4) focado em Dark Mode.
+* **Estilização:** Tailwind CSS (v4).
 * **Roteamento:** React Router Dom para navegação Single Page Application (SPA).
 * **Backend / Banco de Dados:** Supabase (PostgreSQL).
 * **Hospedagem (Deploy):** Vercel.
 
 ---
+
 
 
 ### O Cálculo de MMR (Sistema Elo)
@@ -40,7 +41,7 @@ Quando uma partida é registrada, o Frontend envia apenas o `id` das Brancas, o 
 
 ---
 
-##  Estrutura do Banco de Dados
+## 🗄️ Estrutura do Banco de Dados
 
 O banco de dados relacional é composto por duas tabelas principais:
 
@@ -63,43 +64,6 @@ Funciona como o "livro-razão" imutável do histórico do sistema.
 
 > *Nota de Segurança:* Foi implementada uma restrição (`CHECK constraint`) a nível de banco de dados para impedir que o `jogador_brancas_id` seja igual ao `jogador_pretas_id`.
 
----
-
-##  Como rodar o projeto localmente
-
-Se você for um mantenedor do projeto ou quiser rodar em ambiente de desenvolvimento, siga os passos abaixo:
-
-1. Clone este repositório:
-   ```bash
-   git clone [https://github.com/SEU-USUARIO/petxadrez.git](https://github.com/SEU-USUARIO/petxadrez.git)
-   ```
-2. Entre na pasta do projeto:
-   ```bash
-   cd petxadrez
-   ```
-3. Instale as dependências:
-   ```bash
-   npm install
-   ```
-4. Crie um arquivo `.env.local` na raiz do projeto e insira as credenciais do seu projeto no Supabase:
-   ```env
-   VITE_SUPABASE_URL=sua_url_aqui
-   VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
-   ```
-5. Inicie o servidor de desenvolvimento:
-   ```bash
-   npm run dev
-   ```
-6. O aplicativo estará rodando em `http://localhost:5173`.
-
----
-
-##  Deploy
-
-O deploy contínuo está configurado via **Vercel**. Qualquer novo commit na branch `main` aciona automaticamente um novo *build* da aplicação.
-
-Para o roteamento do React Router funcionar corretamente no servidor estático da Vercel (evitando o erro `404: NOT_FOUND` ao atualizar a página), o projeto conta com um arquivo `vercel.json` na raiz configurado para fazer *rewrite* de todas as rotas para o arquivo `index.html`.
 
 ---
 *Desenvolvido para a comunidade do PET Ciência da Computação.*
-```
