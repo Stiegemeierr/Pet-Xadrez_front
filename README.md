@@ -1,16 +1,105 @@
-# React + Vite
+#  PETXadrez
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> **Status:** Versão Alpha (MVP 1.0) 
 
-Currently, two official plugins are available:
+O **PETXadrez** é uma aplicação web desenvolvida para gerenciar o ranking de jogadores de xadrez da sala do PET (Programa de Educação Tutorial) do curso de Ciência da Computação. 
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+O ambiente serve como um espaço de estudos e socialização, onde dezenas de partidas casuais ocorrem diariamente. O objetivo deste sistema é gamificar essa experiência, introduzindo um sistema de *Matchmaking Rating* (MMR) baseado no cálculo Elo (o mesmo utilizado pela FIDE), proporcionando maior competitividade e incentivando o engajamento dos alunos.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+##  Funcionalidades
 
-## Expanding the ESLint configuration
+* **Leaderboard (Ranking):** Tabela de classificação em tempo real ordenada por MMR, com destaque visual para o Top 3 (Ouro, Prata e Bronze).
+* **Registro de Partidas:** Formulário rápido e otimizado para mobile para registrar os resultados dos jogos na própria sala do PET.
+* **Perfil do Jogador:** Tela de estatísticas detalhadas mostrando a Taxa de Vitória (Winrate) e o histórico das últimas partidas com a variação exata de pontos conquistados ou perdidos.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+##  Tecnologias Utilizadas (Stack)
+
+O projeto foi construído focando em performance, responsividade (Mobile-First) e facilidade de manutenção:
+
+* **Frontend:** React.js construído com Vite.
+* **Estilização:** Tailwind CSS (v4) focado em Dark Mode.
+* **Roteamento:** React Router Dom para navegação Single Page Application (SPA).
+* **Backend / Banco de Dados:** Supabase (PostgreSQL).
+* **Hospedagem (Deploy):** Vercel.
+
+---
+
+
+### O Cálculo de MMR (Sistema Elo)
+Toda a matemática de pontuação roda diretamente no servidor do banco de dados (PostgreSQL) através de uma **Stored Procedure** (`plpgsql`). 
+
+Quando uma partida é registrada, o Frontend envia apenas o `id` das Brancas, o `id` das Pretas e o `resultado` (1 para vitória, 0 para derrota, 0.5 para empate) através de uma chamada de Remote Procedure Call (RPC). O Supabase executa a função `registrar_partida`, que:
+1. Bloqueia as linhas dos jogadores envolvidos temporariamente (`FOR UPDATE`) para evitar sobrescrita de dados.
+2. Calcula a expectativa de vitória de cada um usando a fórmula Elo padrão.
+3. Aplica a constante de volatilidade ($K = 32$) para calcular os novos ratings.
+4. Salva o histórico exato da variação de MMR.
+
+---
+
+##  Estrutura do Banco de Dados
+
+O banco de dados relacional é composto por duas tabelas principais:
+
+### Tabela `jogadores`
+Armazena o estado atual dos membros.
+* `id` (UUID, Primary Key)
+* `nome` (Texto, Unique)
+* `mmr_atual` (Integer, Default 1200)
+* `vitorias` (Integer, Default 0)
+* `derrotas` (Integer, Default 0)
+* `empates` (Integer, Default 0)
+
+### Tabela `partidas`
+Funciona como o "livro-razão" imutável do histórico do sistema.
+* `id` (UUID, Primary Key)
+* `jogador_brancas_id` (Foreign Key referenciando `jogadores.id`)
+* `jogador_pretas_id` (Foreign Key referenciando `jogadores.id`)
+* `resultado` (Numeric restrito a 1, 0 ou 0.5)
+* `variacao_mmr` (Integer)
+
+> *Nota de Segurança:* Foi implementada uma restrição (`CHECK constraint`) a nível de banco de dados para impedir que o `jogador_brancas_id` seja igual ao `jogador_pretas_id`.
+
+---
+
+##  Como rodar o projeto localmente
+
+Se você for um mantenedor do projeto ou quiser rodar em ambiente de desenvolvimento, siga os passos abaixo:
+
+1. Clone este repositório:
+   ```bash
+   git clone [https://github.com/SEU-USUARIO/petxadrez.git](https://github.com/SEU-USUARIO/petxadrez.git)
+   ```
+2. Entre na pasta do projeto:
+   ```bash
+   cd petxadrez
+   ```
+3. Instale as dependências:
+   ```bash
+   npm install
+   ```
+4. Crie um arquivo `.env.local` na raiz do projeto e insira as credenciais do seu projeto no Supabase:
+   ```env
+   VITE_SUPABASE_URL=sua_url_aqui
+   VITE_SUPABASE_ANON_KEY=sua_chave_anon_aqui
+   ```
+5. Inicie o servidor de desenvolvimento:
+   ```bash
+   npm run dev
+   ```
+6. O aplicativo estará rodando em `http://localhost:5173`.
+
+---
+
+##  Deploy
+
+O deploy contínuo está configurado via **Vercel**. Qualquer novo commit na branch `main` aciona automaticamente um novo *build* da aplicação.
+
+Para o roteamento do React Router funcionar corretamente no servidor estático da Vercel (evitando o erro `404: NOT_FOUND` ao atualizar a página), o projeto conta com um arquivo `vercel.json` na raiz configurado para fazer *rewrite* de todas as rotas para o arquivo `index.html`.
+
+---
+*Desenvolvido para a comunidade do PET Ciência da Computação.*
+```
