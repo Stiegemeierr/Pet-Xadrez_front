@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import Ranking from './pages/Ranking';
 import Registro from './pages/Registro';
 import Perfil from './pages/Perfil';
+import NovoJogador from './pages/NovoJogador';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
             {/* As rotas vazias para não quebrar quando clicarmos no menu */}
             <Route path="/registro" element={<Registro />} />
             <Route path="/perfil/:id" element={<Perfil />} />
+            <Route path="/novo-jogador" element={<NovoJogador />} />
           </Routes>
         </main>
       </div>
