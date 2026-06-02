@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+// Removido import do supabase para usar nosso Backend em Flask
+// import { supabase } from '../lib/supabase';
 
 export default function Registro() {
   const [jogadores, setJogadores] = useState([]);
@@ -10,11 +11,20 @@ export default function Registro() {
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
 
-  // Busca a lista de jogadores para preencher os dropdowns
+  // Busca a lista de jogadores do nosso novo Backend (Flask)
   useEffect(() => {
     async function buscarJogadores() {
-      const { data } = await supabase.from('jogadores').select('id, nome').order('nome');
-      if (data) setJogadores(data);
+      try {
+        const res = await fetch('http://127.0.0.1:5000/jogadores');
+        const data = await res.json();
+        // A API já retorna ordenado por MMR
+        // Para o registro, talvez queira ordenar por nome, mas o MMR é bom para ranking
+        // Vamos apenas ordenar por nome aqui no frontend para ficar mais fácil de achar na lista
+        const ordenado = data.sort((a, b) => a.nome.localeCompare(b.nome));
+        setJogadores(ordenado);
+      } catch (err) {
+        console.error("Erro de conexão com o backend:", err);
+      }
     }
     buscarJogadores();
   }, []);
@@ -36,24 +46,35 @@ export default function Registro() {
 
     setLoading(true);
 
-    // Chama a nossa Database Function no PostgreSQL
-    const { error } = await supabase.rpc('registrar_partida', {
-      p_brancas_id: brancasId,
-      p_pretas_id: pretasId,
-      p_resultado: parseFloat(resultado) // Garante que o banco receba um número (1, 0 ou 0.5)
-    });
+    // Chama a nossa API Python
+    try {
+      const res = await fetch('http://127.0.0.1:5000/partidas', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jogador_brancas_id: brancasId,
+          jogador_pretas_id: pretasId,
+          resultado: parseFloat(resultado)
+        })
+      });
 
-    setLoading(false);
+      setLoading(false);
 
-    if (error) {
-      console.error(error);
-      setMensagem({ texto: 'Erro ao registrar partida. Tente novamente.', tipo: 'erro' });
-    } else {
-      setMensagem({ texto: 'Partida registrada com sucesso! O MMR foi atualizado.', tipo: 'sucesso' });
-      // Limpa o formulário após o sucesso
-      setBrancasId('');
-      setPretasId('');
-      setResultado('');
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("Erro da API:", errorData);
+        setMensagem({ texto: 'Erro ao registrar partida: ' + (errorData.error || 'Tente novamente.'), tipo: 'erro' });
+      } else {
+        setMensagem({ texto: 'Partida registrada com sucesso! O MMR foi atualizado.', tipo: 'sucesso' });
+        // Limpa o formulário após o sucesso
+        setBrancasId('');
+        setPretasId('');
+        setResultado('');
+      }
+    } catch (err) {
+      setLoading(false);
+      console.error("Erro de conexão:", err);
+      setMensagem({ texto: 'Erro de conexão com o servidor. O Backend está rodando?', tipo: 'erro' });
     }
   }
 
