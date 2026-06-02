@@ -19,13 +19,23 @@ export default function NovoJogador() {
     setLoading(true);
 
     try {
+      const senhaAdmin = localStorage.getItem('admin_password') || '';
+
       const res = await fetch('https://petxadrez-api.onrender.com/jogadores', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Admin-Password': senhaAdmin
+        },
         body: JSON.stringify({ nome: nome.trim() })
       });
 
       setLoading(false);
+
+      if (res.status === 401) {
+        navigate('/login');
+        return;
+      }
 
       if (!res.ok) {
         const errorData = await res.json();

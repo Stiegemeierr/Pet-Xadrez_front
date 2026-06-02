@@ -4,6 +4,7 @@ import Ranking from './pages/Ranking';
 import Registro from './pages/Registro';
 import Perfil from './pages/Perfil';
 import NovoJogador from './pages/NovoJogador';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
             <Route path="/registro" element={<Registro />} />
             <Route path="/perfil/:id" element={<Perfil />} />
             <Route path="/novo-jogador" element={<NovoJogador />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </main>
       </div>

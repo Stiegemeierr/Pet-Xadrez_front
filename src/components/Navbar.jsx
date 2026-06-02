@@ -28,6 +28,13 @@ export default function Navbar() {
           >
             + Jogador
           </Link>
+          <Link 
+            to="/login" 
+            className={`font-medium transition-colors ml-2 ${location.pathname === '/login' ? 'text-green-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+            title="Modo Admin"
+          >
+            🔒
+          </Link>
         </div>
       </div>
     </nav>

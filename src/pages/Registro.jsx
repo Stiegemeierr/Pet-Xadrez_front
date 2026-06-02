@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-// Removido import do supabase para usar nosso Backend em Flask
-// import { supabase } from '../lib/supabase';
+import { useNavigate } from 'react-router-dom';
 
 export default function Registro() {
   const [jogadores, setJogadores] = useState([]);
@@ -10,6 +9,7 @@ export default function Registro() {
   
   const [loading, setLoading] = useState(false);
   const [mensagem, setMensagem] = useState({ texto: '', tipo: '' });
+  const navigate = useNavigate();
 
   // Busca a lista de jogadores do nosso novo Backend (Flask)
   useEffect(() => {
@@ -48,9 +48,14 @@ export default function Registro() {
 
     // Chama a nossa API Python na nuvem (Render)
     try {
+      const senhaAdmin = localStorage.getItem('admin_password') || '';
+      
       const res = await fetch('https://petxadrez-api.onrender.com/partidas', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'X-Admin-Password': senhaAdmin
+        },
         body: JSON.stringify({
           jogador_brancas_id: brancasId,
           jogador_pretas_id: pretasId,
@@ -59,6 +64,12 @@ export default function Registro() {
       });
 
       setLoading(false);
+
+      if (res.status === 401) {
+        // Redireciona para login se a senha estiver errada ou ausente
+        navigate('/login');
+        return;
+      }
 
       if (!res.ok) {
         const errorData = await res.json();
