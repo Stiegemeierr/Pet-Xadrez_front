@@ -15,7 +15,7 @@ export default function Registro() {
   useEffect(() => {
     async function buscarJogadores() {
       try {
-        const res = await fetch('http://127.0.0.1:5000/jogadores');
+        const res = await fetch('https://petxadrez-api.onrender.com/jogadores');
         const data = await res.json();
         // A API já retorna ordenado por MMR
         // Para o registro, talvez queira ordenar por nome, mas o MMR é bom para ranking
@@ -46,9 +46,9 @@ export default function Registro() {
 
     setLoading(true);
 
-    // Chama a nossa API Python
+    // Chama a nossa API Python na nuvem (Render)
     try {
-      const res = await fetch('http://127.0.0.1:5000/partidas', {
+      const res = await fetch('https://petxadrez-api.onrender.com/partidas', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
