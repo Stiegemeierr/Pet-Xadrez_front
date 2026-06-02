@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 
 export default function Perfil() {
   const { id } = useParams(); // Pega o ID da URL
@@ -11,32 +10,32 @@ export default function Perfil() {
 
   useEffect(() => {
     async function carregarDados() {
-      // 1. Busca os dados do jogador atual
-      const { data: dadosJogador } = await supabase
-        .from('jogadores')
-        .select('*')
-        .eq('id', id)
-        .single();
-      
-      if (dadosJogador) setJogador(dadosJogador);
+      try {
+        // 1. Busca os dados do jogador atual
+        const resJogador = await fetch(`https://petxadrez-api.onrender.com/jogadores/${id}`);
+        if (resJogador.ok) {
+          const dadosJogador = await resJogador.json();
+          setJogador(dadosJogador);
+        }
 
-      // 2. Busca todos os jogadores para podermos mostrar o nome dos oponentes
-      const { data: todosJogadores } = await supabase.from('jogadores').select('id, nome');
-      const mapa = {};
-      if (todosJogadores) {
-        todosJogadores.forEach(j => mapa[j.id] = j.nome);
-        setJogadoresMapa(mapa);
+        // 2. Busca todos os jogadores para podermos mostrar o nome dos oponentes
+        const resTodos = await fetch('https://petxadrez-api.onrender.com/jogadores');
+        if (resTodos.ok) {
+          const todosJogadores = await resTodos.json();
+          const mapa = {};
+          todosJogadores.forEach(j => mapa[j.id] = j.nome);
+          setJogadoresMapa(mapa);
+        }
+
+        // 3. Busca o histórico de partidas
+        const resPartidas = await fetch(`https://petxadrez-api.onrender.com/jogadores/${id}/partidas`);
+        if (resPartidas.ok) {
+          const historico = await resPartidas.json();
+          setPartidas(historico);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar dados do perfil:", err);
       }
-
-      // 3. Busca o histórico de partidas (onde ele foi brancas OU pretas)
-      const { data: historico } = await supabase
-        .from('partidas')
-        .select('*')
-        .or(`jogador_brancas_id.eq.${id},jogador_pretas_id.eq.${id}`)
-        .order('created_at', { ascending: false })
-        .limit(10); // Mostra as últimas 10
-
-      if (historico) setPartidas(historico);
       
       setCarregando(false);
     }
@@ -108,6 +107,9 @@ export default function Perfil() {
             const oponenteId = jogouDeBrancas ? partida.jogador_pretas_id : partida.jogador_brancas_id;
             const nomeOponente = jogadoresMapa[oponenteId] || 'Desconhecido';
             
+            // Usa a nova estrutura do banco para variação de MMR
+            const variacaoPontos = jogouDeBrancas ? partida.variacao_mmr_brancas : partida.variacao_mmr_pretas;
+            
             // Descobre se ele ganhou, perdeu ou empatou
             let resultadoTexto = '';
             let corResultado = '';
@@ -116,7 +118,7 @@ export default function Perfil() {
             if (partida.resultado === 0.5) {
               resultadoTexto = 'Empate';
               corResultado = 'text-zinc-400';
-              sinalMmr = '±';
+              sinalMmr = variacaoPontos > 0 ? '+' : '';
             } else if ((jogouDeBrancas && partida.resultado === 1) || (!jogouDeBrancas && partida.resultado === 0)) {
               resultadoTexto = 'Vitória';
               corResultado = 'text-green-500';
@@ -124,7 +126,7 @@ export default function Perfil() {
             } else {
               resultadoTexto = 'Derrota';
               corResultado = 'text-red-500';
-              sinalMmr = '-';
+              sinalMmr = ''; // O número já virá negativo do backend
             }
 
             // Formata a data (DD/MM/AAAA)
@@ -144,7 +146,7 @@ export default function Perfil() {
                 </div>
                 
                 <div className={`text-lg font-black ${corResultado}`}>
-                  {sinalMmr}{partida.variacao_mmr}
+                  {sinalMmr}{variacaoPontos}
                 </div>
               </div>
             );

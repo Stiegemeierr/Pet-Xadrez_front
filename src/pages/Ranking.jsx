@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { Link } from 'react-router-dom';
 
 export default function Ranking() {
@@ -8,12 +7,15 @@ export default function Ranking() {
 
   useEffect(() => {
     async function buscarJogadores() {
-      const { data, error } = await supabase
-        .from('jogadores')
-        .select('*')
-        .order('mmr_atual', { ascending: false });
-
-      if (!error && data) setJogadores(data);
+      try {
+        const res = await fetch('https://petxadrez-api.onrender.com/jogadores');
+        if (res.ok) {
+          const data = await res.json();
+          setJogadores(data);
+        }
+      } catch (err) {
+        console.error("Erro ao carregar ranking", err);
+      }
       setCarregando(false);
     }
     buscarJogadores();

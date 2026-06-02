@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
 
 export default function NovoJogador() {
@@ -19,37 +18,29 @@ export default function NovoJogador() {
 
     setLoading(true);
 
-    // Geramos o UUID direto no navegador para evitar falhas de inserção
-    const novoId = crypto.randomUUID();
+    try {
+      const res = await fetch('https://petxadrez-api.onrender.com/jogadores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome: nome.trim() })
+      });
 
-    const { error } = await supabase
-      .from('jogadores')
-      .insert([
-        { 
-          id: novoId, 
-          nome: nome.trim(), 
-          mmr_atual: 1200, // Rating inicial padrão do xadrez
-          vitorias: 0, 
-          derrotas: 0, 
-          empates: 0 
-        }
-      ]);
+      setLoading(false);
 
-    setLoading(false);
-
-    if (error) {
-      console.error(error);
-      // O código 23505 no PostgreSQL significa violação de chave única (Unique)
-      if (error.code === '23505') {
-        setMensagem({ texto: 'Já existe um jogador com esse nome!', tipo: 'erro' });
+      if (!res.ok) {
+        const errorData = await res.json();
+        // A API retorna erro 400 se já existir
+        setMensagem({ texto: errorData.error || 'Erro ao cadastrar. Verifique a conexão.', tipo: 'erro' });
       } else {
-        setMensagem({ texto: 'Erro ao cadastrar. Verifique a conexão.', tipo: 'erro' });
+        setMensagem({ texto: 'Jogador criado com sucesso! Redirecionando...', tipo: 'sucesso' });
+        setNome('');
+        // Joga a pessoa de volta pro Ranking após 1.5 segundos
+        setTimeout(() => navigate('/'), 1500); 
       }
-    } else {
-      setMensagem({ texto: 'Jogador criado com sucesso! Redirecionando...', tipo: 'sucesso' });
-      setNome('');
-      // Joga a pessoa de volta pro Ranking após 1.5 segundos
-      setTimeout(() => navigate('/'), 1500); 
+    } catch (err) {
+      setLoading(false);
+      console.error(err);
+      setMensagem({ texto: 'Erro ao cadastrar. O servidor está rodando?', tipo: 'erro' });
     }
   }
 
