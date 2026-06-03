@@ -17,6 +17,12 @@ export default function Navbar() {
             Ranking
           </Link>
           <Link 
+            to="/historico" 
+            className={`font-medium transition-colors ${location.pathname === '/historico' ? 'text-green-400' : 'text-zinc-400 hover:text-zinc-200'}`}
+          >
+            Histórico
+          </Link>
+          <Link 
             to="/registro" 
             className={`font-medium transition-colors ${location.pathname === '/registro' ? 'text-green-400' : 'text-zinc-400 hover:text-zinc-200'}`}
           >

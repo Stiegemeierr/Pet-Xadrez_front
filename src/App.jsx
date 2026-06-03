@@ -5,6 +5,7 @@ import Registro from './pages/Registro';
 import Perfil from './pages/Perfil';
 import NovoJogador from './pages/NovoJogador';
 import Login from './pages/Login';
+import Historico from './pages/Historico';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
             <Route path="/registro" element={<Registro />} />
             <Route path="/perfil/:id" element={<Perfil />} />
             <Route path="/novo-jogador" element={<NovoJogador />} />
+            <Route path="/historico" element={<Historico />} />
             <Route path="/login" element={<Login />} />
           </Routes>
         </main>
