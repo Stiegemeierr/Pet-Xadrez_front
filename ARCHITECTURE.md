@@ -20,9 +20,7 @@ Aplicacao web SPA (Single Page Application) construida em React para gerenciar o
 | Vite | 8.x | Build tool + dev server |
 | Tailwind CSS | 4.x | Estilizacao (via plugin `@tailwindcss/vite`) |
 | React Router Dom | 7.x | Roteamento SPA |
-| @supabase/supabase-js | 2.x | Cliente Supabase (importado mas NAO usado — ver nota abaixo) |
-
-> **Nota:** O cliente Supabase (`src/lib/supabase.js`) esta configurado mas nao e utilizado por nenhuma page. Toda comunicacao com o banco e feita via API Flask (backend). Essa dependencia pode ser removida em uma limpeza futura.
+| Recharts | latest | Graficos (usado no grafico de evolucao do MMR no perfil) |
 
 ---
 
@@ -41,19 +39,17 @@ Pet-Xadrez_front/
 |-- src/
     |-- main.jsx              # Entry point (ReactDOM.createRoot)
     |-- App.jsx               # Layout raiz + definicao de rotas
-    |-- App.css               # CSS legado do template Vite (NAO utilizado)
+    |-- config.js             # Constantes centralizadas (API_BASE_URL)
     |-- index.css             # Importacao do Tailwind CSS
     |-- components/
     |   |-- Navbar.jsx        # Barra de navegacao sticky (links para todas as rotas)
     |-- pages/
-    |   |-- Ranking.jsx       # Leaderboard com lista de jogadores ordenada por MMR
-    |   |-- Historico.jsx     # Historico geral de partidas (com exclusao para admin)
-    |   |-- Registro.jsx      # Formulario de registro de nova partida (admin)
-    |   |-- Perfil.jsx        # Pagina de perfil do jogador + ultimas partidas
-    |   |-- NovoJogador.jsx   # Formulario de cadastro de novo jogador (admin)
-    |   |-- Login.jsx         # Tela de autenticacao admin (senha)
-    |-- lib/
-        |-- supabase.js       # Cliente Supabase (configurado mas nao usado)
+        |-- Ranking.jsx       # Leaderboard com lista de jogadores ordenada por MMR
+        |-- Historico.jsx     # Historico geral de partidas (com exclusao para admin)
+        |-- Registro.jsx      # Formulario de registro de nova partida (admin)
+        |-- Perfil.jsx        # Perfil expandido: grafico MMR, bio, conquistas, partidas
+        |-- NovoJogador.jsx   # Formulario de cadastro de novo jogador (admin)
+        |-- Login.jsx         # Tela de autenticacao admin (senha)
 ```
 
 ---
@@ -99,10 +95,12 @@ Pet-Xadrez_front/
 - Feedback visual de sucesso/erro
 
 #### `Perfil.jsx` — Rota `/perfil/:id`
-- Busca jogador, todos os jogadores (mapa de nomes) e historico de partidas
-- Card principal: nome, MMR grande, Vitorias/Derrotas/Empates/Winrate
-- Barra decorativa gradient verde no topo do card
-- Lista de ultimas partidas com perspectiva do jogador (vitoria/derrota/empate + variacao)
+- Busca jogador, todos os jogadores (mapa de nomes), historico de partidas, historico de MMR e conquistas
+- **Card principal:** nome, bio (italico), curso/semestre, MMR grande, V/D/E/Winrate
+- **Botao Editar Perfil (admin):** modal com formulario para bio, curso, semestre (PUT /jogadores/:id)
+- **Grafico de evolucao do MMR:** Recharts AreaChart com gradiente verde, tooltip customizado, linha de referencia em 500
+- **Conquistas:** grid 2 colunas com badges desbloqueados (coloridos) e travados (cinza, opacidade reduzida). 8 conquistas computadas on-the-fly
+- **Ultimas Partidas:** lista das 10 partidas mais recentes com perspectiva do jogador
 - Botao "Voltar para o Ranking"
 
 #### `NovoJogador.jsx` — Rota `/novo-jogador`
@@ -127,14 +125,12 @@ Pet-Xadrez_front/
 https://petxadrez-api.onrender.com
 ```
 
-> **Importante:** Esta URL esta hardcoded em TODAS as chamadas `fetch()` dentro das pages. Nao existe variavel de ambiente ou constante centralizada para ela.
-
-### Padrao de chamadas
-
-Todas as pages usam `fetch()` nativo. Nao existe biblioteca HTTP (axios, etc). O padrao e:
+A URL da API esta centralizada no arquivo `src/config.js`:
 
 ```javascript
-const res = await fetch('https://petxadrez-api.onrender.com/endpoint', {
+import { API_BASE_URL } from '../config';
+
+const res = await fetch(`${API_BASE_URL}/endpoint`, {
   method: 'POST',
   headers: { 
     'Content-Type': 'application/json',
@@ -161,7 +157,7 @@ const res = await fetch('https://petxadrez-api.onrender.com/endpoint', {
 | `/` | Ranking | Publico | Leaderboard principal |
 | `/historico` | Historico | Publico (exclusao requer admin) | Historico geral |
 | `/registro` | Registro | Admin | Registrar partida |
-| `/perfil/:id` | Perfil | Publico | Perfil de jogador |
+| `/perfil/:id` | Perfil | Publico (edicao requer admin) | Perfil expandido de jogador |
 | `/novo-jogador` | NovoJogador | Admin | Cadastrar jogador |
 | `/login` | Login | Publico | Autenticacao admin |
 
