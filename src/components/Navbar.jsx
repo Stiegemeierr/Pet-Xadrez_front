@@ -8,8 +8,8 @@ export default function Navbar() {
       <div className="max-w-md mx-auto flex justify-between items-center">
         <h1 className="text-xl font-black text-green-500 tracking-wider">PET<span className="text-white">Xadrez</span></h1>
         
-        {/* Adicionamos uma barra de rolagem horizontal invisível para não quebrar no celular */}
-        <div className="flex gap-4 overflow-x-auto whitespace-nowrap no-scrollbar text-sm">
+        {/* Barra de rolagem horizontal customizada para não cobrir o texto no desktop */}
+        <div className="flex gap-4 overflow-x-auto whitespace-nowrap custom-scrollbar pb-2 pt-1 text-sm">
           <Link 
             to="/" 
             className={`font-medium transition-colors ${location.pathname === '/' ? 'text-green-400' : 'text-zinc-400 hover:text-zinc-200'}`}
