@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function Historico() {
   const [partidas, setPartidas] = useState([]);
@@ -27,7 +28,7 @@ export default function Historico() {
     setCarregando(true);
     try {
       // Busca todos os jogadores para mapear IDs → nomes
-      const resJogadores = await fetch('https://petxadrez-api.onrender.com/jogadores');
+      const resJogadores = await fetch(`${API_BASE_URL}/jogadores`);
       if (resJogadores.ok) {
         const jogadores = await resJogadores.json();
         const mapa = {};
@@ -36,7 +37,7 @@ export default function Historico() {
       }
 
       // Busca todas as partidas
-      const resPartidas = await fetch('https://petxadrez-api.onrender.com/partidas');
+      const resPartidas = await fetch(`${API_BASE_URL}/partidas`);
       if (resPartidas.ok) {
         const dados = await resPartidas.json();
         setPartidas(dados);
@@ -70,7 +71,7 @@ export default function Historico() {
     try {
       const senhaAdmin = localStorage.getItem('admin_password') || '';
 
-      const res = await fetch(`https://petxadrez-api.onrender.com/partidas/${partidaSelecionada.id}`, {
+      const res = await fetch(`${API_BASE_URL}/partidas/${partidaSelecionada.id}`, {
         method: 'DELETE',
         headers: {
           'X-Admin-Password': senhaAdmin

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function Ranking() {
   const [jogadores, setJogadores] = useState([]);
@@ -8,7 +9,7 @@ export default function Ranking() {
   useEffect(() => {
     async function buscarJogadores() {
       try {
-        const res = await fetch('https://petxadrez-api.onrender.com/jogadores');
+        const res = await fetch(`${API_BASE_URL}/jogadores`);
         if (res.ok) {
           const data = await res.json();
           setJogadores(data);

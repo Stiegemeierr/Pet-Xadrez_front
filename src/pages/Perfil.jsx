@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function Perfil() {
   const { id } = useParams(); // Pega o ID da URL
@@ -12,14 +13,14 @@ export default function Perfil() {
     async function carregarDados() {
       try {
         // 1. Busca os dados do jogador atual
-        const resJogador = await fetch(`https://petxadrez-api.onrender.com/jogadores/${id}`);
+        const resJogador = await fetch(`${API_BASE_URL}/jogadores/${id}`);
         if (resJogador.ok) {
           const dadosJogador = await resJogador.json();
           setJogador(dadosJogador);
         }
 
         // 2. Busca todos os jogadores para podermos mostrar o nome dos oponentes
-        const resTodos = await fetch('https://petxadrez-api.onrender.com/jogadores');
+        const resTodos = await fetch(`${API_BASE_URL}/jogadores`);
         if (resTodos.ok) {
           const todosJogadores = await resTodos.json();
           const mapa = {};
@@ -28,7 +29,7 @@ export default function Perfil() {
         }
 
         // 3. Busca o histórico de partidas
-        const resPartidas = await fetch(`https://petxadrez-api.onrender.com/jogadores/${id}/partidas`);
+        const resPartidas = await fetch(`${API_BASE_URL}/jogadores/${id}/partidas`);
         if (resPartidas.ok) {
           const historico = await resPartidas.json();
           setPartidas(historico);

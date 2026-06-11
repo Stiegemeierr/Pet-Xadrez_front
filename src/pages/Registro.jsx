@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function Registro() {
   const [jogadores, setJogadores] = useState([]);
@@ -15,7 +16,7 @@ export default function Registro() {
   useEffect(() => {
     async function buscarJogadores() {
       try {
-        const res = await fetch('https://petxadrez-api.onrender.com/jogadores');
+        const res = await fetch(`${API_BASE_URL}/jogadores`);
         const data = await res.json();
         // A API já retorna ordenado por MMR
         // Para o registro, talvez queira ordenar por nome, mas o MMR é bom para ranking
@@ -50,7 +51,7 @@ export default function Registro() {
     try {
       const senhaAdmin = localStorage.getItem('admin_password') || '';
       
-      const res = await fetch('https://petxadrez-api.onrender.com/partidas', {
+      const res = await fetch(`${API_BASE_URL}/partidas`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',

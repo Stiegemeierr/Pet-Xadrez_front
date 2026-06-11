@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { API_BASE_URL } from '../config';
 
 export default function NovoJogador() {
   const [nome, setNome] = useState('');
@@ -21,7 +22,7 @@ export default function NovoJogador() {
     try {
       const senhaAdmin = localStorage.getItem('admin_password') || '';
 
-      const res = await fetch('https://petxadrez-api.onrender.com/jogadores', {
+      const res = await fetch(`${API_BASE_URL}/jogadores`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
